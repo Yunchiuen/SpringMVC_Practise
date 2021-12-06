@@ -8,6 +8,9 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd">
 
 	<context:component-scan base-package="com.mvc.controller"></context:component-scan>
+	<context:component-scan base-package="com.mvc.validator"></context:component-scan>
+	<context:component-scan base-package="com.mvc.service"></context:component-scan>
+	
 	<!-- 解決中文 -->
 	<mvc:annotation-driven>
 		<mvc:message-converters
@@ -22,4 +25,40 @@
 			</bean>
 		</mvc:message-converters>
 	</mvc:annotation-driven>
+	
+	<!-- 定義 view 的位置 -->
+	<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver"
+          id="internalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/view/" />
+        <property name="suffix" value=".jsp" />
+    </bean>
+    
+   	<!-- 錯誤訊息設定 properites -->
+	<bean id="messageSource" class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+        <property name="basename" value="/WEB-INF/resource/errorMessages" />
+        <property name="useCodeAsDefaultMessage" value="false"/>
+		<property name="defaultEncoding" value="UTF-8"/>
+    </bean>
+    
+    <!-- JSR 303 Validator 驗證: Hibernate Validator 實作驗證配置-->
+	<bean id="validator"
+		class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean">
+		<property name="providerClass"
+			value="org.hibernate.validator.HibernateValidator" />
+		<property name="validationMessageSource" ref="messageSource" />
+	</bean>
+	
+	<!-- 例外處理配置 -->
+	<bean class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+		<property name="defaultErrorView" value="error/base_errorpage" />
+		<!-- 指定例外錯誤 -->
+		<property name="exceptionMappings">
+			<props>
+				<prop key="com.mvc.exception.AuthException">
+					error/auth_errorpage
+				</prop>
+			</props>
+		</property>
+	</bean>
+	
 </beans>

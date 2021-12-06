@@ -1,6 +1,9 @@
 package com.mvc.controller;
 
 import java.util.Date;
+import java.util.IntSummaryStatistics;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.ws.rs.PathParam;
@@ -10,6 +13,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.mvc.entity.User;
 
 @Controller
 @RequestMapping(value = "/hello")
@@ -107,6 +112,60 @@ public class Hello {
 	}
 	/*
 	 * 得到多筆資料
-	 * 
+	 * 路徑:/hello/age?a=18&a=19&a=20
+	 * 結果:age of average=19
 	 */
+	@RequestMapping(value = "/age")
+	@ResponseBody
+	public String age(@RequestParam("a") List<Integer>ageList) {
+		double avg= ageList.stream().mapToInt(age -> age).average().getAsDouble();
+		return String.format( "%s ,age of average = %d ", ageList,(int)avg);
+	}
+	/*
+	 * 路徑:/hello/max?score=80&score=100&score=50
+	 * 路徑:/hello/min?score=80&score=100&score=50
+	 * 結果:max score=100
+	 * 結果:min score=50
+	 */
+	@RequestMapping(value = "/{opt}")
+	@ResponseBody
+	public String maxAndMin(@PathVariable("opt") String opt,
+							@RequestParam("score") List<Integer>scores) {
+		String str="%s score = %d";
+		IntSummaryStatistics stat=scores.stream().mapToInt(score -> score).summaryStatistics();
+		switch (opt) {
+		case "max":
+			str=String.format(str, opt,stat.getMax());
+			break;
+		case "min":
+			str=String.format(str, opt,stat.getMin());
+			break;
+		default:
+			str="note";
+			break;
+		}
+		return str;
+	}
+	
+	/*
+	 * map參數
+	 * 路徑:/hello/mix?name=john&score=100&age=18
+	 * 路徑:/hello/mix?name=mary&score=90&age=20&level=2
+	 */
+	@RequestMapping(value = "/mix")
+	@ResponseBody
+	public String mix(@RequestParam Map<String, String> map) {
+		return map.toString();
+	}
+	
+	/*
+	 * java pojo
+	 * 路徑:/hello/user?name=john&age=18
+	 */
+	@RequestMapping(value = "/user")
+	@ResponseBody
+	public String getUser(User user) {
+		return user.toString();
+	}
+	
 }
